@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"unicode"
 
 	"github.com/davecgh/go-spew/spew"
 )
@@ -16,9 +17,63 @@ type counter interface {
 
 type letterCounter struct{ identifier string }
 
+// func (l letterCounter) name() string{ return "letters" }
+// func (l letterCounter) count( l.identifier ) int{ return 1 }
+
+func (l letterCounter) name() string {
+	return l.identifier
+}
+func (l letterCounter) count(input string) int {
+	result := 0
+	for _, char := range input {
+		if unicode.IsLetter(char) {
+			result++
+		}
+	}
+	return result
+}
+
 type numberCounter struct{ designation string }
 
+// func (n numberCounter) name() string{ return "numbers" }
+// func (n numberCounter) count( data string ) int{
+// 	count := 0
+// 	for _, _ := range data {
+// 			count++
+// 	}
+//   return count
+// }
+
+func (n numberCounter) name() string {
+	return n.designation
+}
+func (n numberCounter) count(input string) int {
+	result := 0
+	for _, char := range input {
+		if unicode.IsNumber(char) {
+			result++
+		}
+	}
+	return result
+}
+
 type symbolCounter struct{ label string }
+
+// func (s symbolCounter) name() string{ return "symbols" }
+// func (s symbolCounter) count( s.label ) int{ return 1 }
+
+func (s symbolCounter) name() string {
+	return s.label
+}
+func (s symbolCounter) count(input string) int {
+	result := 0
+	for _, char := range input {
+		if !unicode.IsLetter(char) && !unicode.IsNumber(char) {
+			result++
+		}
+	}
+	return result
+}
 
 func doAnalysis(data string, counters ...counter) map[string]int {
 	// initialize a map to store the counts
@@ -29,12 +84,36 @@ func doAnalysis(data string, counters ...counter) map[string]int {
 
 	// loop over the counters and use their name as the key
 	for _, c := range counters {
+		fmt.Printf("counters: %v, %T\n", c, c)
 		analysis[c.name()] = c.count(data)
 	}
 
 	// return the map
 	return analysis
 }
+
+// func count(data string) {
+// 	switch c.(type) {
+// 	case int:
+// 		count["numbers"]++
+// 	case string:
+// 		count["letters"]++
+// 	default:
+// 		count["symbols"]++
+// 	}
+// }
+
+// func name(c counter) {
+// 	switch c.(type) {
+// 	case int:
+// 		return "numbers"
+// 	case string:
+// 		return "letters"
+// 	default:
+// 		return "symbols"
+// 	}
+// }
+
 
 func main() {
 	// handle any panics that might occur anywhere in this function
@@ -52,10 +131,17 @@ func main() {
 
 	// convert the bytes to a string
 	data := string(bs)
-	spew.Dump(data)
+	// spew.Dump(data)
+
 
 	// call doAnalysis and pass in the data and the counters
+	// analysis := doAnalysis(data)
+	analysis := doAnalysis(data,
+		letterCounter{identifier: "letters"},
+		numberCounter{designation: "numbers"},
+		symbolCounter{label: "symbols"},
+	)
 
 	// dump the map to the console using the spew package
-	// spew.Dump(analysis)
+	spew.Dump(analysis)
 }
